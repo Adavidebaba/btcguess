@@ -1,0 +1,17 @@
+{
+  "name": "btcguess",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:wallets": "node scripts/build-wallet-set.js",
+    "start": "node src/main.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.4.0",
+    "@noble/secp256k1": "^2.1.0",
+    "@scure/base": "^1.1.6",
+    "express": "^5.1.0"
+  }
+}

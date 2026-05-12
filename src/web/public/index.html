@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTC Guesser — Dashboard</title>
+  <meta name="description" content="Monitoraggio in tempo reale del BTC Guesser headless">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-icon">₿</div>
+      <h1>BTC Guesser</h1>
+      <p class="subtitle">Searching for Satoshi's keys…</p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card primary" id="card-spins">
+        <div class="stat-label">Total Spins</div>
+        <div class="stat-value" id="total-spins">—</div>
+        <div class="stat-sub" id="spins-sub">loading…</div>
+      </div>
+      <div class="stat-card accent" id="card-speed">
+        <div class="stat-label">Velocità</div>
+        <div class="stat-value" id="spins-per-sec">—</div>
+        <div class="stat-sub">spin/sec</div>
+      </div>
+      <div class="stat-card" id="card-uptime">
+        <div class="stat-label">Uptime</div>
+        <div class="stat-value" id="uptime">—</div>
+        <div class="stat-sub" id="start-time">—</div>
+      </div>
+      <div class="stat-card" id="card-matches">
+        <div class="stat-label">Match Trovati</div>
+        <div class="stat-value" id="matches-count">—</div>
+        <div class="stat-sub">🔍</div>
+      </div>
+    </div>
+
+    <div class="speed-control">
+      <div class="speed-header">
+        <span class="speed-title">⚡ Velocità</span>
+        <span class="speed-value" id="speed-label">0ms</span>
+      </div>
+      <input type="range" id="speed-slider" class="speed-slider"
+             min="0" max="1000" step="1" value="0">
+      <div class="speed-presets">
+        <button class="preset-btn preset-max" data-delay="0">MAX</button>
+        <button class="preset-btn" data-delay="1">Fast</button>
+        <button class="preset-btn" data-delay="10">Medium</button>
+        <button class="preset-btn" data-delay="100">Slow</button>
+        <button class="preset-btn" data-delay="1000">Minimal</button>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-title">Jackpot</div>
+        <div class="info-row">
+          <span class="info-label">BTC Totali</span>
+          <span class="info-value" id="total-btc">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Wallet Monitorati</span>
+          <span class="info-value" id="wallet-count">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Probabilità per spin</span>
+          <span class="info-value" id="odds">—</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-title">Ultimo Spin</div>
+        <div class="info-row">
+          <span class="info-label">Indirizzo</span>
+          <span class="info-value mono" id="last-address">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Chiave (parziale)</span>
+          <span class="info-value mono" id="last-key">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Timestamp</span>
+          <span class="info-value" id="last-spin-time">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="matches-section" id="matches-section" style="display:none;">
+      <div class="info-card match-card">
+        <div class="info-title">🎉 Match Trovati!</div>
+        <div id="matches-list"></div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Connessione…</span>
+    </footer>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+services:
+  btcguess:
+    build: .
+    container_name: btcguess
+    restart: always
+    ports:
+      - "3100:3000"
+    volumes:
+      - btcguess-data:/app/persistent
+    environment:
+      # Delay tra gli spin in millisecondi (0 = massima velocità)
+      SPIN_DELAY_MS: "0"
+      # Porta web dashboard (interna al container)
+      WEB_PORT: "3000"
+      # Intervallo log su console (secondi)
+      STATS_LOG_INTERVAL_SEC: "30"
+      # Intervallo salvataggio stats su disco (secondi)
+      PERSIST_INTERVAL_SEC: "60"
+      # Pushover (opzionale — lascia vuoto per disabilitare)
+      PUSHOVER_USER_KEY: "uvXzXXiXAx7PEvbKYhKLx1NiPZg4qx"
+      PUSHOVER_API_TOKEN: "a6jcmozgmmhzh8vx6gtq9ms53eki22"
+    # Limita CPU se necessario (0.5 = mezzo core, 1.0 = un core intero)
+    # Decommenta per limitare:
+    # cpus: "0.5"
+
+volumes:
+  btcguess-data:

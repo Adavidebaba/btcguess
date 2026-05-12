@@ -1,0 +1,5 @@
+node_modules/
+.git/
+repo-source/
+.DS_Store
+*.md
