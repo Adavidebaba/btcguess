@@ -9,46 +9,44 @@ export class StatsManager {
     this._totalSpins = 0n;
     this._startTime = Date.now();
     this._lastSpinTime = 0;
-    this._lastAddress = '';
     this._lastPrivKeyHex = '';
     this._matches = [];
-    this._spinWindow = [];
-    this._windowDurationMs = 10_000;
+    
+    // Contatori per gli Spin al Secondo (SPS)
+    this._spsCounter = 0;
+    this._spsLastCalcTime = Date.now();
+    this._currentSps = 0;
   }
 
   /** Registra uno spin completato */
   recordSpin(result) {
     this._totalSpins++;
+    this._spsCounter++;
     this._lastSpinTime = Date.now();
-    this._lastAddress = result.derived.addressUncompressed;
     this._lastPrivKeyHex = result.privKeyHex;
-    this._spinWindow.push(this._lastSpinTime);
-    this._pruneWindow();
+
+    // Calcola SPS ogni secondo
+    const now = Date.now();
+    if (now - this._spsLastCalcTime >= 1000) {
+      this._currentSps = Math.round(this._spsCounter / ((now - this._spsLastCalcTime) / 1000));
+      this._spsCounter = 0;
+      this._spsLastCalcTime = now;
+    }
 
     if (result.win) {
       this._matches.push({
         timestamp: new Date().toISOString(),
-        address: result.derived.addressUncompressed,
+        address: result.match.address,
         privKeyHex: result.privKeyHex,
         balanceBtc: Number(result.match.balanceSats) / SATS_PER_BTC,
       });
     }
   }
 
-  /** Calcola spin/sec nella finestra temporale */
-  _pruneWindow() {
-    const cutoff = Date.now() - this._windowDurationMs;
-    while (this._spinWindow.length > 0 && this._spinWindow[0] < cutoff) {
-      this._spinWindow.shift();
-    }
-  }
-
   get spinsPerSecond() {
-    this._pruneWindow();
-    if (this._spinWindow.length < 2) return 0;
-    const elapsed = this._spinWindow[this._spinWindow.length - 1] - this._spinWindow[0];
-    if (elapsed === 0) return 0;
-    return Math.round((this._spinWindow.length / elapsed) * 1000);
+    // Se non avvengono spin da più di 2 secondi, resetta a 0
+    if (Date.now() - this._lastSpinTime > 2000) return 0;
+    return this._currentSps;
   }
 
   get uptimeSeconds() {
@@ -65,7 +63,9 @@ export class StatsManager {
       lastSpinTime: this._lastSpinTime
         ? new Date(this._lastSpinTime).toISOString()
         : null,
-      lastAddress: this._lastAddress,
+      lastAddress: this._lastPrivKeyHex 
+        ? `Scan...` // Mostriamo solo Scan invece di ricalcolare Base58 per risparmiare CPU
+        : '',
       lastPrivKeyShort: this._lastPrivKeyHex
         ? `${this._lastPrivKeyHex.slice(0, 8)}…${this._lastPrivKeyHex.slice(-8)}`
         : '',

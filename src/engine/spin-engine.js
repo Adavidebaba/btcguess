@@ -16,6 +16,7 @@ export class SpinEngine {
     this._persistTimer = null;
     this._logTimer = null;
     this._testMatchDone = false;
+    this._currentSequentialKey = null;
   }
 
   /** Avvia il loop di spin */
@@ -76,7 +77,16 @@ export class SpinEngine {
       };
       console.log('[TEST] 🧪 Match fittizio forzato per test!');
     } else {
-      result = spin();
+      if (config.searchMode === 'sequential') {
+        if (!this._currentSequentialKey) {
+          this._currentSequentialKey = randomPrivKey();
+        } else {
+          this._currentSequentialKey = this._incrementPrivKey(this._currentSequentialKey);
+        }
+        result = spin(this._currentSequentialKey);
+      } else {
+        result = spin();
+      }
     }
 
     this._stats.recordSpin(result);
@@ -103,5 +113,17 @@ export class SpinEngine {
     if (days > 0) return `${days}d ${hours}h ${minutes}m`;
     if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
     return `${minutes}m ${seconds}s`;
+  }
+
+  _incrementPrivKey(bytes) {
+    const next = new Uint8Array(bytes);
+    for (let i = 31; i >= 0; i--) {
+      if (next[i] < 255) {
+        next[i]++;
+        break;
+      }
+      next[i] = 0;
+    }
+    return next;
   }
 }

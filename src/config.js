@@ -7,6 +7,7 @@ const config = {
   spinDelayMs: parseInt(process.env.SPIN_DELAY_MS ?? '0', 10),
   statsLogIntervalSec: parseInt(process.env.STATS_LOG_INTERVAL_SEC ?? '30', 10),
   persistIntervalSec: parseInt(process.env.PERSIST_INTERVAL_SEC ?? '60', 10),
+  searchMode: process.env.SEARCH_MODE ?? 'random', // 'random' o 'sequential'
 
   // Web dashboard
   webPort: parseInt(process.env.WEB_PORT ?? '3000', 10),

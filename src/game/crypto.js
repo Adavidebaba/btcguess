@@ -1,4 +1,4 @@
-import { getPublicKey } from '@noble/secp256k1';
+import { getPublicKey, utils } from '@noble/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { base58check } from '@scure/base';
@@ -30,9 +30,7 @@ export function privKeyToWif(privKey, compressed) {
 }
 
 export function randomPrivKey() {
-  const buf = new Uint8Array(32);
-  crypto.getRandomValues(buf);
-  return buf;
+  return utils.randomPrivateKey();
 }
 
 export function deriveAll(privKey) {
@@ -46,8 +44,6 @@ export function deriveAll(privKey) {
     pubUncompressed,
     hash160Compressed: h160c,
     hash160Uncompressed: h160u,
-    addressCompressed: hash160ToAddress(h160c),
-    addressUncompressed: hash160ToAddress(h160u),
   };
 }
 
