@@ -1,8 +1,8 @@
-import { getPublicKey, utils } from '@noble/secp256k1';
-import { sha256 } from '@noble/hashes/sha256';
-import { ripemd160 } from '@noble/hashes/ripemd160';
+import { getPublicKey, utils, Point } from '@noble/secp256k1';
+import { createHash } from 'node:crypto';
 import { base58check } from '@scure/base';
 
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest();
 const b58c = base58check(sha256);
 
 const VERSION_P2PKH_MAINNET = 0x00;
@@ -10,7 +10,8 @@ const VERSION_WIF_MAINNET = 0x80;
 const COMPRESSED_FLAG = 0x01;
 
 export function hash160(bytes) {
-  return ripemd160(sha256(bytes));
+  const sha = createHash('sha256').update(bytes).digest();
+  return createHash('ripemd160').update(sha).digest();
 }
 
 export function hash160ToAddress(h160) {
@@ -34,8 +35,9 @@ export function randomPrivKey() {
 }
 
 export function deriveAll(privKey) {
-  const pubCompressed = getPublicKey(privKey, true);
-  const pubUncompressed = getPublicKey(privKey, false);
+  const p = Point.fromPrivateKey(privKey);
+  const pubCompressed = p.toRawBytes(true);
+  const pubUncompressed = p.toRawBytes(false);
   const h160c = hash160(pubCompressed);
   const h160u = hash160(pubUncompressed);
   return {
