@@ -2,6 +2,18 @@
 
 Tutte le modifiche importanti a questo progetto saranno documentate in questo file.
 
+## [Configurazione .env & Report Pushover] - 2026-08-31
+### Aggiunto
+- File `.env` centralizzato con parametri `CPU_PERCENTAGE` (default 25%), `PUSHOVER_USER_KEY`, `PUSHOVER_API_TOKEN` e `PUSHOVER_REPORT_DAYS` (default 3 giorni).
+- Modello `.env.example` per facilitare nuove installazioni.
+- Notifica periodica di progresso e stato scansione via Pushover ogni N giorni con salvataggio persistente del timestamp `lastReportTime`.
+- Test unitari dedicati a `NotificationManager`, `StatsManager` e caricamento `.env`.
+
+### Modificato
+- `src/config.js`: caricamento automatico di `.env` tramite `process.loadEnvFile`.
+- `avvia_nativo.command` e `docker-compose.yml`: aggiornati per caricare la configurazione dal file `.env`.
+- `.gitignore`: escluso il file `.env` per sicurezza.
+
 ## [Ottimizzazione calcolo] - 2026-08-31
 ### Modificato
 - Lookup runtime: Bloom + tabella sostituiti da Map esatta `hash160 → saldo` (stessi match, niente falsi positivi).

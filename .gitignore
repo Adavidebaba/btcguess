@@ -3,3 +3,4 @@ generated-data/
 persistent/
 repo-source/
 .DS_Store
+.env

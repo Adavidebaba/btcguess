@@ -49,9 +49,10 @@ export class SpinEngine {
     this._pool.start();
     this._stats.setPoolStatus(this._pool.getStatus());
 
-    // Salvataggio periodico su disco
+    // Salvataggio periodico su disco e controllo report
     this._persistTimer = setInterval(() => {
       this._persistState();
+      this._checkPeriodicReport();
     }, config.persistIntervalSec * 1000);
 
     // Log periodico su console
@@ -94,6 +95,33 @@ export class SpinEngine {
   _persistState() {
     this._stats.setPoolStatus(this._pool.getStatus());
     this._persist.save(this._stats.serialize());
+  }
+
+  _checkPeriodicReport() {
+    if (!config.pushoverReportDays || config.pushoverReportDays <= 0) return;
+    const intervalMs = config.pushoverReportDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const lastReport = this._stats.lastReportTime || now;
+
+    if (now - lastReport >= intervalMs) {
+      this._sendProgressReport(now);
+    }
+  }
+
+  _sendProgressReport(now) {
+    this._stats.setLastReportTime(now);
+    const s = this._stats.toJSON();
+    const p = s.pool;
+    this._notify.notifyProgressReport({
+      totalSpins: s.totalSpins,
+      spinsPerSecond: s.spinsPerSecond,
+      cpuPercentage: p.cpuPercentage,
+      activeWorkers: p.activeWorkers,
+      totalCores: p.totalCores,
+      formattedUptime: this._formatUptime(s.uptimeSeconds),
+      cursorShort: s.lastPrivKeyShort,
+      matchesCount: s.matchesCount,
+    });
   }
 
   _logStatus() {

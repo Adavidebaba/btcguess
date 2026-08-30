@@ -14,7 +14,7 @@ if [ -n "$PID" ]; then
   echo "Arresto istanza precedente (PID: $PID)..."
   kill -9 $PID 2>/dev/null
 fi
-pkill -f "node src/main.js" 2>/dev/null
+pkill -f "node.*src/main.js" 2>/dev/null
 
 # 2. Verifica dipendenze
 if [ ! -d "node_modules" ]; then
@@ -22,9 +22,9 @@ if [ ! -d "node_modules" ]; then
   npm install --omit=dev
 fi
 
-# 3. Avvia il processo in background e salva il PID
-echo "Avvio motore di scansione a massima potenza (Tutti i Core del Mac)..."
-node src/main.js &
+# 3. Avvia il processo in background e salva il PID (caricando .env nativamente)
+echo "Avvio motore di scansione..."
+node --env-file=.env src/main.js &
 MAIN_PID=$!
 
 # 4. Attende che il server sia pronto e apre la dashboard
@@ -34,7 +34,7 @@ open "http://localhost:3000"
 
 echo ""
 echo "================================================"
-echo "  ✅ BTC Guesser è attivo a piena potenza!      "
+echo "  ✅ BTC Guesser è attivo!                      "
 echo "  📊 Dashboard: http://localhost:3000           "
 echo "  Premi CTRL+C per arrestare l'applicazione.    "
 echo "================================================"

@@ -11,6 +11,7 @@ export class StatsManager {
     this._lastSpinTime = 0;
     this._lastPrivKeyHex = '';
     this._matches = [];
+    this._lastReportTime = Date.now();
 
     // Contatori per calcolo reale SPS aggregato
     this._spsCounter = 0;
@@ -20,7 +21,7 @@ export class StatsManager {
     this._poolStatus = {
       totalCores: 1,
       activeWorkers: 1,
-      cpuPercentage: 100,
+      cpuPercentage: 25,
       currentCursor: '',
     };
   }
@@ -57,8 +58,15 @@ export class StatsManager {
     this._poolStatus = { ...this._poolStatus, ...status };
   }
 
+  get lastReportTime() {
+    return this._lastReportTime;
+  }
+
+  setLastReportTime(time) {
+    this._lastReportTime = time;
+  }
+
   get spinsPerSecond() {
-    // Se non ci sono nuovi spin da oltre 4 secondi, azzera
     if (Date.now() - this._lastSpinTime > 4000) {
       return 0;
     }
@@ -97,6 +105,7 @@ export class StatsManager {
       matches: this._matches,
       cursorHex: this._poolStatus.currentCursor,
       cpuPercentage: this._poolStatus.cpuPercentage,
+      lastReportTime: this._lastReportTime,
     };
   }
 
@@ -108,5 +117,8 @@ export class StatsManager {
     this._spsLastCalcTime = Date.now();
     this._spsCounter = 0;
     this._matches = data.matches ?? [];
+    if (data.lastReportTime) {
+      this._lastReportTime = data.lastReportTime;
+    }
   }
 }
