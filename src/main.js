@@ -2,7 +2,7 @@
  * Entry point: avvia il motore di spin multi-thread headless + web dashboard.
  */
 import config from './config.js';
-import { loadBloom, loadStats } from './game/wallets.js';
+import { loadWalletMap, loadStats } from './game/wallets.js';
 import { StatsManager } from './managers/stats-manager.js';
 import { PersistenceManager } from './managers/persistence-manager.js';
 import { NotificationManager } from './managers/notification-manager.js';
@@ -24,9 +24,9 @@ async function main() {
   console.log(`[init] ${walletStats.walletCount} wallet caricati`);
   console.log(`[init] Jackpot: ${walletStats.totalBtc} BTC`);
 
-  // Pre-carica bloom filter in memoria
-  loadBloom();
-  console.log('[init] Bloom filter caricato');
+  // Pre-carica la Map esatta in memoria (il thread principale non fa lookup)
+  loadWalletMap();
+  console.log('[init] Wallet map caricata');
 
   // Manager
   const statsManager = new StatsManager();

@@ -2,8 +2,9 @@
  * Wallet data loader — versione server-side.
  * Carica bloom filter, wallet table e stats da filesystem
  * invece che via HTTP fetch (come fa la versione browser).
- * 
- * Riutilizza BloomFilter e WalletTable dalla repo originale senza modifiche.
+ *
+ * Il ciclo caldo usa una Map esatta hash160 → saldo.
+ * Bloom e tabella restano disponibili per compatibilità e verifica.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -11,9 +12,18 @@ import { BloomFilter } from './bloom.js';
 import { WalletTable } from './wallet-table.js';
 import config from '../config.js';
 
+const HEADER_BYTES = 8;
+const ENTRY_BYTES = 28;
+const HASH160_BYTES = 20;
+
 let _bloom = null;
 let _table = null;
 let _stats = null;
+let _walletMap = null;
+
+function hash160Key(h160) {
+  return Buffer.from(h160).toString('hex');
+}
 
 export function loadBloom() {
   if (_bloom) return _bloom;
@@ -30,7 +40,7 @@ export function loadStats() {
   return _stats;
 }
 
-function loadTable() {
+export function loadTable() {
   if (_table) return _table;
   const tablePath = resolve(config.dataDir, 'satoshi-wallets.bin');
   const buf = readFileSync(tablePath);
@@ -38,23 +48,45 @@ function loadTable() {
   return _table;
 }
 
+function readU64LE(bytes, offset) {
+  let value = 0n;
+  for (let i = 7; i >= 0; i--) {
+    value = (value << 8n) | BigInt(bytes[offset + i]);
+  }
+  return value;
+}
+
+/**
+ * Carica una Map esatta hash160Hex → balanceSats.
+ * Una sola volta per processo/worker; lookup O(1) senza falsi positivi.
+ */
+export function loadWalletMap() {
+  if (_walletMap) return _walletMap;
+
+  const table = loadTable();
+  const bytes = table.bytes;
+  const map = new Map();
+
+  for (let i = 0; i < table.count; i++) {
+    const off = HEADER_BYTES + i * ENTRY_BYTES;
+    const hash160 = bytes.subarray(off, off + HASH160_BYTES);
+    map.set(hash160Key(hash160), readU64LE(bytes, off + HASH160_BYTES));
+  }
+
+  _walletMap = map;
+  return _walletMap;
+}
+
+
 /**
  * Probe candidate hash160s. Returns the first {hash160, balanceSats}
- * that survives both the Bloom filter and the sorted-table confirmation,
- * or null. Versione sincrona per il server (tutto in memoria).
+ * presente nella Map esatta, o null.
  */
 export function checkHash160s(candidates) {
-  const bloom = loadBloom();
-  const hits = [];
+  const walletMap = loadWalletMap();
   for (const h of candidates) {
-    if (bloom.has(h)) hits.push(h);
-  }
-  if (hits.length === 0) return null;
-
-  const tbl = loadTable();
-  for (const h of hits) {
-    const balanceSats = tbl.lookup(h);
-    if (balanceSats !== null) {
+    const balanceSats = walletMap.get(hash160Key(h));
+    if (balanceSats !== undefined) {
       return { hash160: h, balanceSats };
     }
   }

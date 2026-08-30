@@ -2,7 +2,18 @@
 
 Tutte le modifiche importanti a questo progetto saranno documentate in questo file.
 
+## [Ottimizzazione calcolo] - 2026-08-31
+### Modificato
+- Lookup runtime: Bloom + tabella sostituiti da Map esatta `hash160 → saldo` (stessi match, niente falsi positivi).
+- Worker: derivazione EC incrementale `P(k+step)=P(k)+step·G` al posto di `Point.fromPrivateKey` a ogni spin.
+### Aggiunto
+- `scripts/benchmark-baseline.js` (`npm run benchmark`).
+- Test di equivalenza Map (tutti i wallet) e derivazione incrementale (striding, wrap modulo n).
+### Performance (Mac ARM64, Node 20)
+- ~6× su 1 worker (~3.100 → ~18.200 spin/s), ~5× su 8 worker (~13.500 → ~65.400 spin/s).
+
 ## [Iniziale] - 2026-05-12
+
 ### Aggiunto
 - Inizializzazione repository
 - Motore base di ricerca

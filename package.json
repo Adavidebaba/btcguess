@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build:wallets": "node scripts/build-wallet-set.js",
+    "benchmark": "node scripts/benchmark-baseline.js",
     "start": "node src/main.js",
     "test": "node --test tests/*.test.js"
   },
