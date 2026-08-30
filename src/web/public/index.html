@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BTC Guesser — Dashboard</title>
-  <meta name="description" content="Monitoraggio in tempo reale del BTC Guesser headless">
+  <title>BTC Guesser — Dashboard Multi-Thread</title>
+  <meta name="description" content="Monitoraggio in tempo reale del BTC Guesser Multi-Thread">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -14,7 +14,7 @@
     <header class="header">
       <div class="header-icon">₿</div>
       <h1>BTC Guesser</h1>
-      <p class="subtitle">Searching for Satoshi's keys…</p>
+      <p class="subtitle">Multi-Thread Satoshi Searcher — Zero Duplicati</p>
     </header>
 
     <div class="stats-grid">
@@ -24,7 +24,7 @@
         <div class="stat-sub" id="spins-sub">loading…</div>
       </div>
       <div class="stat-card accent" id="card-speed">
-        <div class="stat-label">Velocità</div>
+        <div class="stat-label">Velocità Totale</div>
         <div class="stat-value" id="spins-per-sec">—</div>
         <div class="stat-sub">spin/sec</div>
       </div>
@@ -40,25 +40,42 @@
       </div>
     </div>
 
-    <div class="speed-control">
-      <div class="speed-header">
-        <span class="speed-title">⚡ Velocità</span>
-        <span class="speed-value" id="speed-label">0ms</span>
+    <!-- CPU Cores Multi-threading Control -->
+    <div class="control-card cpu-control">
+      <div class="control-header">
+        <span class="control-title">⚙️ Utilizzo CPU & Core Paralleli</span>
+        <span class="control-value cpu-value-text" id="cpu-label">100% (— Core)</span>
       </div>
-      <input type="range" id="speed-slider" class="speed-slider"
+      <input type="range" id="cpu-slider" class="range-slider cpu-slider"
+             min="1" max="100" step="1" value="100">
+      <div class="control-presets">
+        <button class="preset-btn cpu-preset-btn" data-percent="25">25% Core</button>
+        <button class="preset-btn cpu-preset-btn" data-percent="50">50% Core</button>
+        <button class="preset-btn cpu-preset-btn" data-percent="75">75% Core</button>
+        <button class="preset-btn cpu-preset-btn preset-max active" data-percent="100">100% MAX</button>
+      </div>
+    </div>
+
+    <!-- Delay Control -->
+    <div class="control-card speed-control">
+      <div class="control-header">
+        <span class="control-title">⚡ Throttling / Delay</span>
+        <span class="control-value speed-value-text" id="speed-label">0ms</span>
+      </div>
+      <input type="range" id="speed-slider" class="range-slider speed-slider"
              min="0" max="1000" step="1" value="0">
-      <div class="speed-presets">
-        <button class="preset-btn preset-max" data-delay="0">MAX</button>
-        <button class="preset-btn" data-delay="1">Fast</button>
-        <button class="preset-btn" data-delay="10">Medium</button>
-        <button class="preset-btn" data-delay="100">Slow</button>
-        <button class="preset-btn" data-delay="1000">Minimal</button>
+      <div class="control-presets">
+        <button class="preset-btn speed-preset-btn preset-max" data-delay="0">0ms (MAX)</button>
+        <button class="preset-btn speed-preset-btn" data-delay="1">1ms</button>
+        <button class="preset-btn speed-preset-btn" data-delay="10">10ms</button>
+        <button class="preset-btn speed-preset-btn" data-delay="100">100ms</button>
+        <button class="preset-btn speed-preset-btn" data-delay="1000">1s</button>
       </div>
     </div>
 
     <div class="info-grid">
       <div class="info-card">
-        <div class="info-title">Jackpot</div>
+        <div class="info-title">Jackpot & Obiettivi</div>
         <div class="info-row">
           <span class="info-label">BTC Totali</span>
           <span class="info-value" id="total-btc">—</span>
@@ -74,17 +91,17 @@
       </div>
 
       <div class="info-card">
-        <div class="info-title">Ultimo Spin</div>
+        <div class="info-title">Stato Scansione</div>
         <div class="info-row">
-          <span class="info-label">Indirizzo</span>
-          <span class="info-value mono" id="last-address">—</span>
+          <span class="info-label">Core Attivi</span>
+          <span class="info-value mono" id="pool-threads-info">—</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Chiave (parziale)</span>
+          <span class="info-label">Cursore (Zero Duplicati)</span>
           <span class="info-value mono" id="last-key">—</span>
         </div>
         <div class="info-row">
-          <span class="info-label">Timestamp</span>
+          <span class="info-label">Ultimo Aggiornamento</span>
           <span class="info-value" id="last-spin-time">—</span>
         </div>
       </div>

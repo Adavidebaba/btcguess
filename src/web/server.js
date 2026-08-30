@@ -1,6 +1,6 @@
 /**
  * Web server Express per la dashboard di monitoraggio.
- * Serve file statici + API REST per le statistiche.
+ * Serve file statici + API REST per statistiche e controllo thread/velocità.
  */
 import express from 'express';
 import { resolve, dirname } from 'node:path';
@@ -12,8 +12,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const STATIC_DIR = resolve(__dirname, 'public');
 
 export class WebServer {
-  constructor({ statsManager }) {
+  constructor({ statsManager, engine = null }) {
     this._stats = statsManager;
+    this._engine = engine;
     this._walletStats = null;
     this._app = express();
     this._setupRoutes();
@@ -35,9 +36,24 @@ export class WebServer {
       if (isNaN(delay) || delay < 0 || delay > 10000) {
         return res.status(400).json({ error: 'delayMs deve essere 0-10000' });
       }
-      config.spinDelayMs = delay;
-      console.log(`[web] Velocità cambiata: delay=${delay}ms`);
+      if (this._engine) {
+        this._engine.setDelay(delay);
+      } else {
+        config.spinDelayMs = delay;
+      }
       res.json({ ok: true, spinDelayMs: delay });
+    });
+
+    this._app.post('/api/threads', (req, res) => {
+      const percentage = parseInt(req.body.percentage, 10);
+      if (isNaN(percentage) || percentage < 1 || percentage > 100) {
+        return res.status(400).json({ error: 'percentage deve essere tra 1 e 100' });
+      }
+      if (this._engine) {
+        this._engine.setCpuPercentage(percentage);
+      }
+      const poolStatus = this._engine?.pool?.getStatus();
+      res.json({ ok: true, percentage, pool: poolStatus });
     });
 
     this._app.get('/api/health', (_req, res) => {

@@ -1,5 +1,5 @@
 /**
- * Entry point: avvia il motore di spin headless + web dashboard.
+ * Entry point: avvia il motore di spin multi-thread headless + web dashboard.
  */
 import config from './config.js';
 import { loadBloom, loadStats } from './game/wallets.js';
@@ -10,8 +10,9 @@ import { SpinEngine } from './engine/spin-engine.js';
 import { WebServer } from './web/server.js';
 
 async function main() {
-  console.log('=== BTC Guesser — Headless Mode ===');
+  console.log('=== BTC Guesser — Multi-Thread Headless Mode ===');
   console.log(`Spin delay: ${config.spinDelayMs}ms`);
+  console.log(`CPU Percentage: ${config.cpuPercentage}%`);
   console.log(`Web port: ${config.webPort}`);
   console.log(`Data dir: ${config.dataDir}`);
   console.log(`Persist dir: ${config.persistDir}`);
@@ -32,23 +33,26 @@ async function main() {
   const persistenceManager = new PersistenceManager();
   const notificationManager = new NotificationManager();
 
-  // Ripristina stato precedente (se presente)
-  const savedState = persistenceManager.load();
-  if (savedState) {
-    statsManager.restore(savedState);
-    console.log(`[init] Stato ripristinato — ${savedState.totalSpins} spin precedenti`);
-  }
-
-  // Avvia web dashboard
-  const webServer = new WebServer({ statsManager });
-  await webServer.start();
-
-  // Avvia motore spin
+  // Inizializza motore spin
   const engine = new SpinEngine({
     statsManager,
     persistenceManager,
     notificationManager,
   });
+
+  // Ripristina stato precedente (se presente)
+  const savedState = persistenceManager.load();
+  if (savedState) {
+    statsManager.restore(savedState);
+    engine.restoreState(savedState);
+    console.log(`[init] Stato ripristinato — ${savedState.totalSpins} spin precedenti`);
+  }
+
+  // Avvia web dashboard
+  const webServer = new WebServer({ statsManager, engine });
+  await webServer.start();
+
+  // Avvia motore spin
   engine.start();
 
   // Graceful shutdown

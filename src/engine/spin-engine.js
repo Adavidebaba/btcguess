@@ -1,10 +1,8 @@
 /**
- * Motore di spin headless.
- * Esegue spin continui in background con delay configurabile.
- * Si appoggia alla funzione spin() originale della repo.
+ * Motore di spin coordinatore multi-thread.
+ * Gestisce il ciclo di vita del WorkerPoolManager, la persistenza e le notifiche.
  */
-import { spin } from '../game/spin.js';
-import { deriveAll, randomPrivKey, bytesToHex } from '../game/crypto.js';
+import { WorkerPoolManager } from './worker-pool-manager.js';
 import config from '../config.js';
 
 export class SpinEngine {
@@ -16,92 +14,111 @@ export class SpinEngine {
     this._persistTimer = null;
     this._logTimer = null;
     this._testMatchDone = false;
-    this._currentSequentialKey = null;
+
+    this._pool = new WorkerPoolManager({
+      statsManager: this._stats,
+      defaultPercentage: config.cpuPercentage,
+      delayMs: config.spinDelayMs,
+      onMatch: (matchData) => this._handleMatch(matchData),
+    });
+
+    this._stats.setPoolStatus(this._pool.getStatus());
   }
 
-  /** Avvia il loop di spin */
+  get pool() {
+    return this._pool;
+  }
+
+  /** Ripristina stato da file */
+  restoreState(savedState) {
+    if (!savedState) return;
+    if (savedState.cursorHex) {
+      this._pool.setCursorHex(savedState.cursorHex);
+    }
+    if (savedState.cpuPercentage) {
+      this._pool.setCpuPercentage(savedState.cpuPercentage);
+    }
+    this._stats.setPoolStatus(this._pool.getStatus());
+  }
+
+  /** Avvia il motore e il pool di worker */
   start() {
     if (this._running) return;
     this._running = true;
-    console.log(`[engine] Avviato — delay: ${config.spinDelayMs}ms`);
+
+    this._pool.start();
+    this._stats.setPoolStatus(this._pool.getStatus());
 
     // Salvataggio periodico su disco
     this._persistTimer = setInterval(() => {
-      this._persist.save(this._stats.serialize());
+      this._persistState();
     }, config.persistIntervalSec * 1000);
 
     // Log periodico su console
     this._logTimer = setInterval(() => {
-      const s = this._stats.toJSON();
-      console.log(
-        `[engine] spins=${s.totalSpins} | ${s.spinsPerSecond} spin/s | ` +
-        `uptime=${this._formatUptime(s.uptimeSeconds)} | ` +
-        `matches=${s.matchesCount}`
-      );
+      this._logStatus();
     }, config.statsLogIntervalSec * 1000);
 
-    // Avvia il loop
-    this._loop();
+    // Gestione eventuale test match
+    this._checkTestMatch();
   }
 
-  /** Ferma il loop */
+  /** Ferma il motore */
   stop() {
     this._running = false;
     if (this._persistTimer) clearInterval(this._persistTimer);
     if (this._logTimer) clearInterval(this._logTimer);
-    // Salvataggio finale
-    this._persist.save(this._stats.serialize());
-    console.log('[engine] Fermato');
+
+    this._pool.stop();
+    this._persistState();
+    console.log('[engine] Motore e pool fermati');
   }
 
-  /** Loop principale */
-  _loop() {
-    if (!this._running) return;
+  setCpuPercentage(percentage) {
+    this._pool.setCpuPercentage(percentage);
+    this._stats.setPoolStatus(this._pool.getStatus());
+  }
 
-    let result;
+  setDelay(delayMs) {
+    config.spinDelayMs = delayMs;
+    this._pool.setDelay(delayMs);
+  }
 
-    // Test mode: forza un match al primo spin per verificare il salvataggio
+  _handleMatch(matchData) {
+    console.log('[engine] 🎉 MATCH TROVATO!', matchData);
+    this._stats.recordMatch(matchData);
+    this._notify.notifyMatch(matchData);
+    this._persistState();
+  }
+
+  _persistState() {
+    this._stats.setPoolStatus(this._pool.getStatus());
+    this._persist.save(this._stats.serialize());
+  }
+
+  _logStatus() {
+    this._stats.setPoolStatus(this._pool.getStatus());
+    const s = this._stats.toJSON();
+    const p = s.pool;
+    console.log(
+      `[engine] spins=${s.totalSpins} | ${s.spinsPerSecond} spin/s | ` +
+      `threads=${p.activeWorkers}/${p.totalCores} (${p.cpuPercentage}%) | ` +
+      `uptime=${this._formatUptime(s.uptimeSeconds)} | ` +
+      `matches=${s.matchesCount}`
+    );
+  }
+
+  _checkTestMatch() {
     if (config.testMatch && !this._testMatchDone) {
       this._testMatchDone = true;
-      const privKey = randomPrivKey();
-      const derived = deriveAll(privKey);
-      result = {
-        win: true,
-        privKey,
-        privKeyHex: bytesToHex(privKey),
-        derived,
-        match: {
-          hash160: derived.hash160Uncompressed,
-          balanceSats: 5_000_000_000n, // 50 BTC (come genesis block)
-        },
+      const fakeMatch = {
+        timestamp: new Date().toISOString(),
+        address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+        privKeyHex: '0000000000000000000000000000000000000000000000000000000000000001',
+        balanceSats: 5_000_000_000n,
       };
-      console.log('[TEST] 🧪 Match fittizio forzato per test!');
-    } else {
-      if (config.searchMode === 'sequential') {
-        if (!this._currentSequentialKey) {
-          this._currentSequentialKey = randomPrivKey();
-        } else {
-          this._currentSequentialKey = this._incrementPrivKey(this._currentSequentialKey);
-        }
-        result = spin(this._currentSequentialKey);
-      } else {
-        result = spin();
-      }
-    }
-
-    this._stats.recordSpin(result);
-
-    if (result.win) {
-      const matchData = this._stats.toJSON().matches.at(-1);
-      this._notify.notifyMatch(matchData);
-      this._persist.save(this._stats.serialize());
-    }
-
-    if (config.spinDelayMs > 0) {
-      setTimeout(() => this._loop(), config.spinDelayMs);
-    } else {
-      // setImmediate per non bloccare l'event loop (permette a Express di rispondere)
-      setImmediate(() => this._loop());
+      console.log('[TEST] 🧪 Simulazione match di test...');
+      this._handleMatch(fakeMatch);
     }
   }
 
@@ -113,17 +130,5 @@ export class SpinEngine {
     if (days > 0) return `${days}d ${hours}h ${minutes}m`;
     if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
     return `${minutes}m ${seconds}s`;
-  }
-
-  _incrementPrivKey(bytes) {
-    const next = new Uint8Array(bytes);
-    for (let i = 31; i >= 0; i--) {
-      if (next[i] < 255) {
-        next[i]++;
-        break;
-      }
-      next[i] = 0;
-    }
-    return next;
   }
 }

@@ -2,12 +2,14 @@ services:
   btcguess:
     build: .
     container_name: btcguess
-    restart: always
+    restart: unless-stopped
     ports:
       - "3100:3000"
     volumes:
-      - btcguess-data:/app/persistent
+      - ./persistent:/app/persistent
     environment:
+      # Percentuale di core CPU da utilizzare (1-100, modificabile anche da GUI)
+      CPU_PERCENTAGE: "100"
       # Delay tra gli spin in millisecondi (0 = massima velocità)
       SPIN_DELAY_MS: "0"
       # Porta web dashboard (interna al container)
@@ -22,6 +24,3 @@ services:
     # Limita CPU se necessario (0.5 = mezzo core, 1.0 = un core intero)
     # Decommenta per limitare:
     # cpus: "0.5"
-
-volumes:
-  btcguess-data:

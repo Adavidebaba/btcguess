@@ -3,11 +3,12 @@
  * Tutti i parametri sono sovrascrivibili via variabili d'ambiente.
  */
 const config = {
-  // Spin engine
+  // Spin engine & multi-threading
   spinDelayMs: parseInt(process.env.SPIN_DELAY_MS ?? '0', 10),
+  cpuPercentage: parseInt(process.env.CPU_PERCENTAGE ?? '100', 10),
   statsLogIntervalSec: parseInt(process.env.STATS_LOG_INTERVAL_SEC ?? '30', 10),
   persistIntervalSec: parseInt(process.env.PERSIST_INTERVAL_SEC ?? '60', 10),
-  searchMode: process.env.SEARCH_MODE ?? 'random', // 'random' o 'sequential'
+  searchMode: process.env.SEARCH_MODE ?? 'chunked', // 'chunked' con zero duplicati
 
   // Web dashboard
   webPort: parseInt(process.env.WEB_PORT ?? '3000', 10),

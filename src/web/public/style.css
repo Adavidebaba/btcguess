@@ -1,4 +1,4 @@
-/* === BTC Guesser Dashboard — Dark Premium Theme === */
+/* === BTC Guesser Dashboard — Dark Premium Multi-Thread Theme === */
 
 :root {
   --bg-primary: #0a0a0f;
@@ -12,7 +12,8 @@
   --accent-gold: #ffd700;
   --accent-green: #00d084;
   --accent-red: #ff4757;
-  --accent-blue: #4a90d9;
+  --accent-blue: #3a86ff;
+  --accent-cyan: #00f2fe;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --radius: 12px;
@@ -42,7 +43,7 @@ body {
 /* === Header === */
 .header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .header-icon {
@@ -59,7 +60,7 @@ body {
 }
 
 .header h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
   background: linear-gradient(135deg, var(--accent-orange), var(--accent-gold));
   -webkit-background-clip: text;
@@ -114,7 +115,7 @@ body {
 }
 
 .stat-card.accent::before {
-  background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
 }
 
 .stat-label {
@@ -147,11 +148,161 @@ body {
   margin-top: 0.25rem;
 }
 
+/* === Controls (CPU & Speed) === */
+.control-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.cpu-control {
+  border-color: rgba(58, 134, 255, 0.25);
+  background: linear-gradient(180deg, rgba(58, 134, 255, 0.03) 0%, var(--bg-card) 100%);
+}
+
+.control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.control-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.control-value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.cpu-value-text {
+  color: var(--accent-cyan);
+}
+
+.speed-value-text {
+  color: var(--accent-orange);
+}
+
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.cpu-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+  transition: box-shadow 0.2s;
+}
+
+.speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
+  transition: box-shadow 0.2s;
+}
+
+.cpu-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  border: none;
+}
+
+.speed-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  border: none;
+}
+
+.control-presets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.cpu-preset-btn:hover {
+  border-color: var(--accent-cyan);
+}
+
+.cpu-preset-btn.active {
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.speed-preset-btn:hover {
+  border-color: var(--accent-orange);
+}
+
+.speed-preset-btn.active {
+  background: rgba(247, 147, 26, 0.15);
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+}
+
+.preset-btn.preset-max {
+  color: var(--accent-green);
+}
+
+.preset-btn.preset-max.active {
+  background: rgba(0, 208, 132, 0.15);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
 /* === Info Cards === */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -215,115 +366,6 @@ body {
   word-break: break-all;
   line-height: 1.6;
   color: var(--accent-gold);
-}
-
-/* === Speed Control === */
-.speed-control {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.speed-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.speed-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.speed-value {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--accent-orange);
-}
-
-.speed-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border);
-  outline: none;
-  cursor: pointer;
-  margin-bottom: 0.75rem;
-}
-
-.speed-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent-orange);
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(247, 147, 26, 0.4);
-  transition: box-shadow 0.2s;
-}
-
-.speed-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 16px rgba(247, 147, 26, 0.7);
-}
-
-.speed-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent-orange);
-  cursor: pointer;
-  border: none;
-}
-
-.speed-presets {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.preset-btn {
-  flex: 1;
-  min-width: 60px;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.preset-btn:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-  border-color: var(--accent-orange);
-}
-
-.preset-btn.active {
-  background: rgba(247, 147, 26, 0.15);
-  color: var(--accent-orange);
-  border-color: var(--accent-orange);
-}
-
-.preset-btn.preset-max {
-  color: var(--accent-green);
-}
-
-.preset-btn.preset-max.active {
-  background: rgba(0, 208, 132, 0.15);
-  color: var(--accent-green);
-  border-color: var(--accent-green);
 }
 
 /* === Footer === */
