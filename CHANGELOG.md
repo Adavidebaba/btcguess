@@ -2,6 +2,13 @@
 
 Tutte le modifiche importanti a questo progetto saranno documentate in questo file.
 
+## [Supporto Mac Intel & Auto-bootstrap] - 2026-10-28
+### Aggiunto
+- `avvia_nativo_intel.command`: script nativo con auto-download di Node.js x86_64 per Mac mini Intel i5 dual core.
+
+### Modificato
+- `avvia_nativo.command`: rilevamento automatico architettura (`arm64` / `x86_64`) con setup trasparente di Node.js.
+
 ## [Fix Delay & Modalità Nativa Mac] - 2026-10-28
 ### Corretto
 - `src/engine/spin-engine.js`: rimosso richiamo non supportato `this._pool.setDelay` prevenendo il crash da dashboard.

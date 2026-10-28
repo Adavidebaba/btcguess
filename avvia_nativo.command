@@ -10,7 +10,26 @@ echo "   🚀 Avvio BTC Guesser — Modalità Nativa       "
 echo "================================================"
 echo ""
 
-# 1. Ferma eventuali processi attivi sulla porta 3000 o vecchie istanze
+# 1. Verifica se Node.js è presente; se assente, scarica automaticamente la build per l'architettura in uso
+if ! command -v node >/dev/null 2>&1; then
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "x86_64" ]; then
+    NODE_DIST="darwin-x64"
+  else
+    NODE_DIST="darwin-arm64"
+  fi
+  echo "🔍 Node.js non rilevato. Download versione nativa ($NODE_DIST) in corso..."
+  mkdir -p "$HOME/.local"
+  curl -fsSL "https://nodejs.org/dist/v22.23.4/node-v22.23.4-$NODE_DIST.tar.gz" | tar -xz -C "$HOME/.local"
+  if [ -d "$HOME/.local/node-v22.23.4-$NODE_DIST" ]; then
+    rm -rf "$HOME/.local/node"
+    mv "$HOME/.local/node-v22.23.4-$NODE_DIST" "$HOME/.local/node"
+    export PATH="$HOME/.local/node/bin:$PATH"
+    echo "✅ Node.js $(node -v) configurato con successo!"
+  fi
+fi
+
+# 2. Ferma eventuali processi attivi sulla porta 3000 o vecchie istanze
 PID=$(lsof -ti:3000)
 if [ -n "$PID" ]; then
   echo "Arresto istanza precedente (PID: $PID)..."
