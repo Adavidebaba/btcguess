@@ -3,6 +3,8 @@
 # Posizionati nella directory del progetto
 cd "$(dirname "$0")" || exit 1
 
+export PATH="$HOME/.local/node/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
 echo "================================================"
 echo "   🚀 Avvio BTC Guesser — Modalità Nativa       "
 echo "================================================"

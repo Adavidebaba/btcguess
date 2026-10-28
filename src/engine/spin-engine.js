@@ -82,7 +82,6 @@ export class SpinEngine {
 
   setDelay(delayMs) {
     config.spinDelayMs = delayMs;
-    this._pool.setDelay(delayMs);
   }
 
   _handleMatch(matchData) {

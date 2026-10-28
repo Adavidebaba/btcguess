@@ -15,7 +15,7 @@ if [ -n "$PID" ]; then
   echo "Processo PID $PID terminato."
 fi
 
-pkill -f "node src/main.js" 2>/dev/null
+pkill -f "node.*src/main.js" 2>/dev/null
 
 echo ""
 echo "✅ BTC Guesser è stato arrestato con successo."

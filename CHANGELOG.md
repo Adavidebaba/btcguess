@@ -2,6 +2,13 @@
 
 Tutte le modifiche importanti a questo progetto saranno documentate in questo file.
 
+## [Fix Delay & Modalità Nativa Mac] - 2026-10-28
+### Corretto
+- `src/engine/spin-engine.js`: rimosso richiamo non supportato `this._pool.setDelay` prevenendo il crash da dashboard.
+
+### Modificato
+- `avvia_nativo.command` e `ferma_nativo.command`: ripristinati e configurati con supporto al percorso Node.js nativo locale per esecuzione bare-metal su macOS.
+
 ## [Configurazione .env & Report Pushover] - 2026-08-31
 ### Aggiunto
 - File `.env` centralizzato con parametri `CPU_PERCENTAGE` (default 25%), `PUSHOVER_USER_KEY`, `PUSHOVER_API_TOKEN` e `PUSHOVER_REPORT_DAYS` (default 3 giorni).
